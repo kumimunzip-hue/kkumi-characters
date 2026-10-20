@@ -361,6 +361,20 @@ body.intro{overflow:hidden}
 .home-logo.logo-row img{display:block; width:auto; background:none; border:0; padding:0; border-radius:0; box-shadow:none; min-width:0}
 .home-logo.logo-row .lr-main{height:clamp(26px,6.4vw,72px)}
 .home-logo.logo-row .lr-sub{height:clamp(20px,5vw,56px)}
+
+.ph-ov{touch-action:none; -webkit-user-select:none; user-select:none}
+.ph-ov img{pointer-events:none; -webkit-user-drag:none}
+/* 캐릭터 전시관 글씨체 통일 (고운돋움) */
+#gallery, #gallery *, #overlay, #overlay *, #comic-ov, #comic-ov *{font-family:var(--body)}
+#gallery .sec-head h2{font-family:var(--disp)}
+#gallery .sec-head p, .count-chip, .tag, .power .lab, .btn-info, .btn-story, .m-no, .story-cta,
+.field .k, .nav button, .comic-title small, .zoom-hint{font-weight:700}
+.nameplate, .m-name, .comic-title, .no-tag, .count-chip b{font-weight:700; letter-spacing:-.01em}
+.nameplate{font-size:1.4rem}
+.m-name{font-size:1.9rem}
+.tag{font-size:.88rem}
+.btn-info,.btn-story{font-size:.95rem}
+.how, .power .val, .field .v{line-height:1.6}
 </style>
 </head>
 <body>
@@ -516,7 +530,7 @@ body.intro{overflow:hidden}
 <div class="grid" id="grid" role="list" aria-label="캐릭터 목록"></div>
   </section>
   <div class="back-wrap"><a class="back" href="#">처음 화면으로</a></div>
-  <footer><div class="hr"></div>시흥시 꾸미청소년문화의집 · 031-433-4490</footer>
+  <footer><div class="hr"></div>시흥시꾸미청소년문화의집 · 031-433-4490</footer>
 </div>
 
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="m-name">
@@ -669,8 +683,16 @@ else{
   const ov=document.getElementById('ph-ov'), img=document.getElementById('ph-img'), cnt=document.getElementById('ph-count');
   let k=0;
   function show(i){k=(i+tiles.length)%tiles.length; const t=tiles[k].querySelector('img'); img.src=t.src; img.alt=t.alt; cnt.textContent=(k+1)+' / '+tiles.length;}
-  function open(i){show(i); ov.classList.add('open'); document.body.style.overflow='hidden'; document.getElementById('ph-x').focus();}
-  function close(){ov.classList.remove('open'); document.body.style.overflow='';}
+  const vp=document.querySelector('meta[name="viewport"]'), vp0=vp.getAttribute('content');
+  const noZoom=e=>{ if(ov.classList.contains('open')) e.preventDefault(); };
+  function open(i){show(i); ov.classList.add('open'); document.body.style.overflow='hidden';
+    vp.setAttribute('content','width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
+    document.getElementById('ph-x').focus();}
+  function close(){ov.classList.remove('open'); document.body.style.overflow=''; vp.setAttribute('content',vp0);}
+  ['gesturestart','gesturechange','dblclick'].forEach(t=>ov.addEventListener(t,noZoom,{passive:false}));
+  ov.addEventListener('touchmove',e=>{ if(e.touches.length>1) e.preventDefault(); },{passive:false});
+  window.addEventListener('wheel',e=>{ if(e.ctrlKey) noZoom(e); },{passive:false});
+  document.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&['+','=','-','0'].includes(e.key)) noZoom(e); });
   tiles.forEach(t=>t.addEventListener('click',()=>open(+t.dataset.i)));
   document.getElementById('ph-x').addEventListener('click',close);
   document.getElementById('ph-prev').addEventListener('click',e=>{e.stopPropagation();show(k-1);});
